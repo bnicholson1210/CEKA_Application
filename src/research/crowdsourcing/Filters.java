@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import stat.StatCalc;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
@@ -31,7 +32,8 @@ public class Filters
 {
         public static ArrayList<AnalyzedWorker> dynamicClassificationSpammerPicker(Dataset dataset, String name, 
                 ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames, 
-                String evalAttribute, double filterLevel, Classifier classifier) throws Exception {
+                String evalAttribute, double filterLevel, Classifier classifier, Map<String, Double> confs) throws Exception {
+            if(confs == null) confs = new HashMap<>();
             ArrayList<Dataset> dat = new ArrayList();
             ArrayList<AnalyzedWorker> spammers = new ArrayList();
             dat.add(dataset);
@@ -63,6 +65,7 @@ public class Filters
             boolean flag = false;
             while(!ready)
             {
+                confs.clear();
                 if(iterations == 10)
                 {
                     //System.out.println("Starting Over");
@@ -98,6 +101,9 @@ public class Filters
                 {
                     Example e = workersCopy.getExampleByIndex(i);
                     int classification = (int)classifier.classifyInstance(e);
+                    double[] distribution = classifier.distributionForInstance(e);
+                    System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
+                    confs.put(possibleSpammers.get(i).getId(), distribution[classification]);
                     classifications[i] = classification;
                     if(classifications[i] == 1) {
                         spamPropEst += (double)possibleSpammers.get(i).getMultipleNoisyLabelSet(0).getLabelSetSize() /
@@ -134,14 +140,22 @@ public class Filters
             }
             return spammers;
         }
+        
         public static Dataset dynamicClassificationFiltering(Dataset dataset, String name, 
                 ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames, 
-                String evalAttribute, double filterLevel, Classifier classifier) throws Exception
+                String evalAttribute, double filterLevel, Classifier classifier, Map<String, Double> confs) throws Exception
         {
             ArrayList<AnalyzedWorker> spammers = dynamicClassificationSpammerPicker(dataset,
-                    name, names, datasets, attributeNames, evalAttribute, filterLevel, classifier);
+                    name, names, datasets, attributeNames, evalAttribute, filterLevel, classifier, confs);
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             return graph.removeSpammers(spammers);
+        }
+        
+        public static Dataset dynamicClassificationFiltering(Dataset dataset, String name, 
+                ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames, 
+                String evalAttribute, double filterLevel, Classifier classifier) throws Exception{
+            return dynamicClassificationFiltering(dataset, name, names, datasets, attributeNames,
+                    evalAttribute, filterLevel, classifier, null);
         }
         
         public static ArrayList<AnalyzedWorker> RYSpammerPicker(Dataset dataset){
