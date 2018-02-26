@@ -65,6 +65,7 @@ public class MainExperiments {
             attributeSet.add("spammerScore");
             attributeSet.add("workerCost");
             attributeSet.add("proportion");
+
             String evaluationAttribute = "EMAccuracy";
             new DawidSkene(30).doInference(dataset);
             Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames, 
@@ -80,6 +81,7 @@ public class MainExperiments {
                
            String workerDatasetArffFilename = createWorkerDataset(dataset.relationName(), dcfData, csnfData, ryData, ipwData);
            Dataset workerDataset = FileLoader.loadFile(workerDatasetArffFilename);
+           workerDataset.setClassIndex(-1);
            for(Clusterer clusterer : clusterers){
                
                 Normalize normalize = new Normalize();
@@ -109,12 +111,13 @@ public class MainExperiments {
         bw.write("@attribute\tatt1\treal\n");
         bw.write("@attribute\tatt2\treal\n");
         bw.write("@attribute\tatt3\treal\n");
+        bw.write("@attribute\tatt4\treal\n");
         bw.write("@attribute\tclass\t{0,1}\n");
 
         bw.write("@data\n");
         
         for(int i = 0; i < dcfData.length; i++){
-            bw.write("" + dcfData[i] + "," + csnfData[i] + "," + ryData[i] + "," + ipwData + ",0\n");
+            bw.write("" + dcfData[i] + "," + csnfData[i] + "," + ryData[i] + "," + ipwData[i] + ",0\n");
         }
         
         bw.close();
