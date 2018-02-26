@@ -31,7 +31,7 @@ public class MainExperiments {
         ArrayList<Dataset> datasets = Datasets.getCrowdsourcingDatasets();
         //Set number of clustering algorithms that will be run
         int numClusterers = 10;
-        Clusterer[] clusterers = new Clusterer[10];
+        Clusterer[] clusterers = new Clusterer[numClusterers];
         Random rand = new Random(0);
         //Initialize all the clustering algorithms as K-means clusterers
         //with 2 centroids, which are randomly generated each time
