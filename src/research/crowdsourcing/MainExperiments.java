@@ -35,7 +35,7 @@ public class MainExperiments {
         Random rand = new Random(0);
         //Initialize all the clustering algorithms as K-means clusterers
         //with 2 centroids, which are randomly generated each time
-        for(int i = 0; i < 10; i++){
+        for(int i = 0; i < numClusterers; i++){
             SimpleKMeans kmeans = new SimpleKMeans();
             kmeans.setNumClusters(2);
             kmeans.setSeed(rand.nextInt());
