@@ -119,16 +119,20 @@ public class MainExperiments {
                Integer thisBadCluster;
                Integer thisGoodCluster;
                for(int j = 0; j < workers.size(); j++){
-                    AnalyzedWorker w = workers.get(i);
+                    AnalyzedWorker w = workers.get(j);
                     Double workerEmAccuracy = wtg.getCharacteristicValueForWorker("EMAccuracy", w);
+                    System.out.println("em accuracy: " + workerEmAccuracy);
                     if(workerClusters.get(w).get(i) == 0){
+                        System.out.println("Goes to cluster 0");
                         cluster0accs.add(workerEmAccuracy);
                     }else{
+                        System.out.println("Goes to cluster 1");
                         cluster1accs.add(workerEmAccuracy);
                     }
                }
                Double cluster0Mean = StatCalc.mean(cluster0accs);
                Double cluster1Mean = StatCalc.mean(cluster1accs);
+               System.out.println("cluster0Mean: " + cluster0Mean + ", cluster1Mean: " + cluster1Mean );
                if(cluster0Mean >= cluster1Mean){
                    thisGoodCluster = 0;
                    thisBadCluster = 1;
@@ -149,7 +153,9 @@ public class MainExperiments {
                        workerQualityClusterValues.put(w, thisWorkerQualityClusterValues);
                    }
                    thisWorkerQualityClusters.add((thisGoodCluster == workerClusters.get(w).get(i) ? GOOD_CLUSTER_CODE : BAD_CLUSTER_CODE));
-                   thisWorkerQualityClusterValues.add((cluster0Mean - cluster1Mean) * (workerClusters.get(w).get(i) == 0 ? 1 : -1));
+                   double qualityValue = (cluster0Mean - cluster1Mean) * (workerClusters.get(w).get(i) == 0 ? 1 : -1);
+                   System.out.println("" + i + "-" + j + ": " + qualityValue);
+                   thisWorkerQualityClusterValues.add(qualityValue);
                }
            }
            List<AnalyzedWorker> spammers = new ArrayList<>();
@@ -168,13 +174,16 @@ public class MainExperiments {
                    spammers.add(w);
                }
            }*/
+           System.out.println("Summing up quality values.");
            for(int i = 0; i < workers.size(); i++){
                AnalyzedWorker w = workers.get(i);
                List<Double> thisWorkerQualityClusterValues = workerQualityClusterValues.get(w);
                Double total = 0.0;
                for(int j = 0; j < thisWorkerQualityClusterValues.size(); j++){
+                   System.out.println("" + j + "-" + i + ": " + thisWorkerQualityClusterValues.get(j));
                    total += thisWorkerQualityClusterValues.get(j);
                }
+               System.out.println("Total: " + total);
                if(total < 0){
                    spammers.add(w);
                }
@@ -194,7 +203,7 @@ public class MainExperiments {
             double[] ryData, double[] ipwData) throws Exception{
         String fn;
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File(
-                fn = "/customDatasets/workerEnsembleClustering/" + datasetName + ".arff")));
+                fn = "customDatasets/workerEnsembleClustering/" + datasetName + ".arff")));
         bw.write("@relation\t" + datasetName + "\n");
         bw.write("@attribute\tatt1\treal\n");
         bw.write("@attribute\tatt2\treal\n");
