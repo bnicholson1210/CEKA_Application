@@ -14,6 +14,7 @@ import ceka.utils.PerformanceStatistic;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import research.DatasetUtils;
 
 public class WorkerTaskGraph 
@@ -1090,7 +1091,7 @@ public class WorkerTaskGraph
             return 1.0 - sim;
         }
         
-        public Dataset removeSpammers(ArrayList<AnalyzedWorker> spammers)
+        public Dataset removeSpammers(List<AnalyzedWorker> spammers)
         {
             Dataset result = dataset.generateEmpty();
             for(int i = 0; i < dataset.getCategorySize(); i++)

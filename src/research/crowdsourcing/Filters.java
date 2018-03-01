@@ -102,7 +102,7 @@ public class Filters
                     Example e = workersCopy.getExampleByIndex(i);
                     int classification = (int)classifier.classifyInstance(e);
                     double[] distribution = classifier.distributionForInstance(e);
-                    System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
+                    //System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
                     if(classification==0){
                         confs.put(possibleSpammers.get(i).getId(), distribution[classification]);
                     }

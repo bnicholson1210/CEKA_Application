@@ -8,13 +8,20 @@ package research.crowdsourcing;
 import ceka.consensus.ds.DawidSkene;
 import ceka.converters.FileLoader;
 import ceka.core.Dataset;
+import ceka.core.Example;
+import cekax.utils.DatasetMapper;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import research.ResultMetrics;
+import stat.StatCalc;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.functions.SMO;
 import weka.classifiers.lazy.IBk;
 import weka.clusterers.Clusterer;
 import weka.clusterers.SimpleKMeans;
@@ -67,6 +74,7 @@ public class MainExperiments {
             attributeSet.add("proportion");
             String evaluationAttribute = "EMAccuracy";
             new DawidSkene(30).doInference(dataset);
+
             Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames,
                     datasets, attributeSet, evaluationAttribute, .5, new IBk(5), confs);
 
@@ -80,32 +88,114 @@ public class MainExperiments {
 
            String workerDatasetArffFilename = createWorkerDataset(dataset.relationName(), dcfData, csnfData, ryData, ipwData);
            Dataset workerDataset = FileLoader.loadFile(workerDatasetArffFilename);
-           workerDataset.setClassIndex(-1)
+           workerDataset.setClassIndex(-1);
+           DatasetMapper<AnalyzedWorker> datasetMapper = new DatasetMapper(workerDataset, workers);
+           Map<AnalyzedWorker, List<Integer>> workerClusters = new HashMap<>();
+           Map<AnalyzedWorker, List<Integer>> workerQualityClusters = new HashMap<>();
+           Map<AnalyzedWorker, List<Double>> workerQualityClusterValues = new HashMap<>();
+           WorkerTaskGraph wtg = new WorkerTaskGraph(dataset);
+           final Integer GOOD_CLUSTER_CODE = 0;
+           final Integer BAD_CLUSTER_CODE = 1;
            for(Clusterer clusterer : clusterers){
-
-                Normalize normalize = new Normalize();
-                normalize.setInputFormat(workerDataset);
-                normalize.useFilter(workerDataset, normalize);
+               Normalize normalize = new Normalize();
+               normalize.setInputFormat(workerDataset);
+               normalize.useFilter(workerDataset, normalize);
                clusterer.buildClusterer(workerDataset);
                for(int i = 0; i < workerDataset.getExampleSize(); i++){
-
+                   Example e = workerDataset.getExampleByIndex(i);
+                   int clusterNumber = clusterer.clusterInstance(e);
+                   AnalyzedWorker w = datasetMapper.getAssociatedObjectOfExample(e);
+                   List<Integer> thisWorkerClusters = workerClusters.get(w);
+                   if(thisWorkerClusters == null){
+                       thisWorkerClusters = new ArrayList<>();
+                       workerClusters.put(w, thisWorkerClusters);
+                   }
+                   thisWorkerClusters.add(clusterNumber);
                }
            }
+           for(int i = 0; i < clusterers.length; i++){
+               List<Double> cluster0accs = new ArrayList<>();
+               List<Double> cluster1accs = new ArrayList<>();
+               Integer thisBadCluster;
+               Integer thisGoodCluster;
+               for(int j = 0; j < workers.size(); j++){
+                    AnalyzedWorker w = workers.get(j);
+                    Double workerEmAccuracy = wtg.getCharacteristicValueForWorker("EMAccuracy", w);
+                    if(workerClusters.get(w).get(i) == 0){
+                        cluster0accs.add(workerEmAccuracy);
+                    }else{
+                        cluster1accs.add(workerEmAccuracy);
+                    }
+               }
+               Double cluster0Mean = StatCalc.mean(cluster0accs);
+               Double cluster1Mean = StatCalc.mean(cluster1accs);
+               if(cluster0Mean >= cluster1Mean){
+                   thisGoodCluster = 0;
+                   thisBadCluster = 1;
+               }else{
+                   thisGoodCluster = 1;
+                   thisBadCluster = 0;
+               }
+               for(int j = 0; j < workers.size(); j++){
+                   AnalyzedWorker w = workers.get(j);
+                   List<Integer> thisWorkerQualityClusters = workerQualityClusters.get(w);
+                   List<Double> thisWorkerQualityClusterValues = workerQualityClusterValues.get(w);
+                   if(thisWorkerQualityClusters == null){
+                       thisWorkerQualityClusters = new ArrayList<>();
+                       workerQualityClusters.put(w, thisWorkerQualityClusters);
+                   }
+                   if(thisWorkerQualityClusterValues == null){
+                       thisWorkerQualityClusterValues = new ArrayList<>();
+                       workerQualityClusterValues.put(w, thisWorkerQualityClusterValues);
+                   }
+                   thisWorkerQualityClusters.add((thisGoodCluster == workerClusters.get(w).get(i) ? GOOD_CLUSTER_CODE : BAD_CLUSTER_CODE));
+                   double qualityValue = (cluster0Mean - cluster1Mean) * (workerClusters.get(w).get(i) == 0 ? 1 : -1);
+                   thisWorkerQualityClusterValues.add(qualityValue);
+               }
+           }
+           List<AnalyzedWorker> spammers = new ArrayList<>();
+           /*for(int i = 0; i < workers.size(); i++){
+               AnalyzedWorker w = workers.get(i);
+               List<Integer> thisWorkerQualityClusters = workerQualityClusters.get(w);
+               Double sum = 0.0;
+               Double total = 0.0;
+               for(int j = 0; j < thisWorkerQualityClusters.size(); j++){
+                   total++;
+                   if(thisWorkerQualityClusters.get(j) == BAD_CLUSTER_CODE){
+                       sum++;
+                   }
+               }
+               if(sum / total > .5){
+                   spammers.add(w);
+               }
+           }*/
+           for(int i = 0; i < workers.size(); i++){
+               AnalyzedWorker w = workers.get(i);
+               List<Double> thisWorkerQualityClusterValues = workerQualityClusterValues.get(w);
+               Double total = 0.0;
+               for(int j = 0; j < thisWorkerQualityClusterValues.size(); j++){
+                   total += thisWorkerQualityClusterValues.get(j);
+               }
+               if(total < 0){
+                   spammers.add(w);
+               }
+
+           }
+           Dataset filteredDataset = wtg.removeSpammers(spammers);
+           new DawidSkene(30).doInference(dataset);
+           System.out.println("Accuracy before filter: " + ResultMetrics.accuracy(dataset));
+           System.out.println("AUC before filter: " + ResultMetrics.auc(dataset));
+           new DawidSkene(30).doInference(filteredDataset);
+           System.out.println("Accuracy after filter: " + ResultMetrics.accuracy(filteredDataset));
+           System.out.println("AUC after filter: " + ResultMetrics.auc(filteredDataset));
         }
-
-        //TODO: Run each clusterer on this data set and extract each pair of clusters.
-
-        //TODO: Use an ensemble technique to (1) determine which cluster is the
-        //non-spammers and which cluster is the spammers, for each run of the clusterer,
-        //and (2) integrate all the information together to reach a final conclusion
-        //about each worker regarding whether he is a spammer.
     }
 
     private static String createWorkerDataset(String datasetName, double[] dcfData, double[] csnfData,
             double[] ryData, double[] ipwData) throws Exception{
         String fn;
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File(
-                fn = "/customDatasets/workerEnsembleClustering/" + datasetName + ".arff")));
+                fn = "customDatasets/workerEnsembleClustering/" + datasetName + ".arff")));
         bw.write("@relation\t" + datasetName + "\n");
         bw.write("@attribute\tatt1\treal\n");
         bw.write("@attribute\tatt2\treal\n");
