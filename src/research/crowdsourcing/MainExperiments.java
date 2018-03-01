@@ -121,18 +121,14 @@ public class MainExperiments {
                for(int j = 0; j < workers.size(); j++){
                     AnalyzedWorker w = workers.get(j);
                     Double workerEmAccuracy = wtg.getCharacteristicValueForWorker("EMAccuracy", w);
-                    System.out.println("em accuracy: " + workerEmAccuracy);
                     if(workerClusters.get(w).get(i) == 0){
-                        System.out.println("Goes to cluster 0");
                         cluster0accs.add(workerEmAccuracy);
                     }else{
-                        System.out.println("Goes to cluster 1");
                         cluster1accs.add(workerEmAccuracy);
                     }
                }
                Double cluster0Mean = StatCalc.mean(cluster0accs);
                Double cluster1Mean = StatCalc.mean(cluster1accs);
-               System.out.println("cluster0Mean: " + cluster0Mean + ", cluster1Mean: " + cluster1Mean );
                if(cluster0Mean >= cluster1Mean){
                    thisGoodCluster = 0;
                    thisBadCluster = 1;
@@ -154,7 +150,6 @@ public class MainExperiments {
                    }
                    thisWorkerQualityClusters.add((thisGoodCluster == workerClusters.get(w).get(i) ? GOOD_CLUSTER_CODE : BAD_CLUSTER_CODE));
                    double qualityValue = (cluster0Mean - cluster1Mean) * (workerClusters.get(w).get(i) == 0 ? 1 : -1);
-                   System.out.println("" + i + "-" + j + ": " + qualityValue);
                    thisWorkerQualityClusterValues.add(qualityValue);
                }
            }
@@ -174,16 +169,13 @@ public class MainExperiments {
                    spammers.add(w);
                }
            }*/
-           System.out.println("Summing up quality values.");
            for(int i = 0; i < workers.size(); i++){
                AnalyzedWorker w = workers.get(i);
                List<Double> thisWorkerQualityClusterValues = workerQualityClusterValues.get(w);
                Double total = 0.0;
                for(int j = 0; j < thisWorkerQualityClusterValues.size(); j++){
-                   System.out.println("" + j + "-" + i + ": " + thisWorkerQualityClusterValues.get(j));
                    total += thisWorkerQualityClusterValues.get(j);
                }
-               System.out.println("Total: " + total);
                if(total < 0){
                    spammers.add(w);
                }
