@@ -149,6 +149,7 @@ public class MainExperiments {
                        workerQualityClusterValues.put(w, thisWorkerQualityClusterValues);
                    }
                    thisWorkerQualityClusters.add((thisGoodCluster == workerClusters.get(w).get(i) ? GOOD_CLUSTER_CODE : BAD_CLUSTER_CODE));
+                   thisWorkerQualityClusterValues.add((cluster0Mean - cluster1Mean) * (workerClusters.get(w).get(i) == 0 ? 1 : -1));
                }
            }
            List<AnalyzedWorker> spammers = new ArrayList<>();
