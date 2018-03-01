@@ -28,10 +28,10 @@ import weka.filters.unsupervised.attribute.Normalize;
  *
  * @author Bryce
  */
-public class Filters 
+public class Filters
 {
-        public static ArrayList<AnalyzedWorker> dynamicClassificationSpammerPicker(Dataset dataset, String name, 
-                ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames, 
+        public static ArrayList<AnalyzedWorker> dynamicClassificationSpammerPicker(Dataset dataset, String name,
+                ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames,
                 String evalAttribute, double filterLevel, Classifier classifier, Map<String, Double> confs) throws Exception {
             if(confs == null) confs = new HashMap<>();
             ArrayList<Dataset> dat = new ArrayList();
@@ -43,13 +43,13 @@ public class Filters
             ArrayList<AnalyzedWorker> possibleSpammers = SyntheticCrowdsourcing.getWorkersForDataset(dataset);
             ArrayList<AnalyzedTask> tasks = SyntheticCrowdsourcing.getTasksForDataset(dataset);
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset, possibleSpammers, tasks);
-            
+
             //printCorrelationCode(dataset);
             //workersCopy.setClassIndex(-1);
             Normalize normalize = new Normalize();
             normalize.setInputFormat(workersCopy);
             normalize.useFilter(workersCopy, normalize);
-            
+
             boolean ready = false;
             double prop = .5;
             double adder = .25;
@@ -88,7 +88,7 @@ public class Filters
                     }
                     desiredIterations = minIndex;
                 }
-                
+
                 Dataset others = Analysis.createSpammerDatasetFromAllOtherDatasets(datasets, names, name, attributeNames, evalAttribute, prop);
                 classifier.buildClassifier(others);
                 spamEst = 0;
@@ -102,8 +102,18 @@ public class Filters
                     Example e = workersCopy.getExampleByIndex(i);
                     int classification = (int)classifier.classifyInstance(e);
                     double[] distribution = classifier.distributionForInstance(e);
+<<<<<<< HEAD
                     //System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
                     confs.put(possibleSpammers.get(i).getId(), distribution[classification] * (classification == 0 ? 1 : -1));
+=======
+                    System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
+                    if(classification==0){
+                        confs.put(possibleSpammers.get(i).getId(), distribution[classification]);
+                    }
+                    else{
+                      confs.put(possibleSpammers.get(i).getId(), (-distribution[classification]));
+                    }
+>>>>>>> 01cf1787bf2ef9b9deb794b828cc22d4cc480b6d
                     classifications[i] = classification;
                     if(classifications[i] == 1) {
                         spamPropEst += (double)possibleSpammers.get(i).getMultipleNoisyLabelSet(0).getLabelSetSize() /
@@ -140,9 +150,9 @@ public class Filters
             }
             return spammers;
         }
-        
-        public static Dataset dynamicClassificationFiltering(Dataset dataset, String name, 
-                ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames, 
+
+        public static Dataset dynamicClassificationFiltering(Dataset dataset, String name,
+                ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames,
                 String evalAttribute, double filterLevel, Classifier classifier, Map<String, Double> confs) throws Exception
         {
             ArrayList<AnalyzedWorker> spammers = dynamicClassificationSpammerPicker(dataset,
@@ -150,67 +160,67 @@ public class Filters
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             return graph.removeSpammers(spammers);
         }
-        
-        public static Dataset dynamicClassificationFiltering(Dataset dataset, String name, 
-                ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames, 
+
+        public static Dataset dynamicClassificationFiltering(Dataset dataset, String name,
+                ArrayList<String> names, ArrayList<Dataset> datasets, ArrayList<String> attributeNames,
                 String evalAttribute, double filterLevel, Classifier classifier) throws Exception{
             return dynamicClassificationFiltering(dataset, name, names, datasets, attributeNames,
                     evalAttribute, filterLevel, classifier, null);
         }
-        
+
         public static ArrayList<AnalyzedWorker> RYSpammerPicker(Dataset dataset){
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             ArrayList<AnalyzedWorker> workers = graph.getWorkers();
-            ArrayList<AnalyzedWorker> spammers = new ArrayList();            
+            ArrayList<AnalyzedWorker> spammers = new ArrayList();
             for(int i = 0; i < workers.size(); i++){
                 AnalyzedWorker w = workers.get(i);
                 double[] spammerScores = graph.spammerScore(w, null);
                 //System.out.println("" + i + ": " + spammerScores[0] + "," + spammerScores[1] + ". " + (spammerScores[0] <= spammerScores[1] ? "Yes" : "No"));
-                if(spammerScores[0] <= spammerScores[1]) 
+                if(spammerScores[0] <= spammerScores[1])
                     spammers.add(w);
             }
             return spammers;
         }
-        
+
         public static Dataset RYFilter(Dataset dataset){
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             ArrayList<AnalyzedWorker> spammers = RYSpammerPicker(dataset);
             return graph.removeSpammers(spammers);
         }
-       
+
         public static ArrayList<AnalyzedWorker> IPWSpammerPicker(Dataset dataset){
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             ArrayList<AnalyzedWorker> workers = graph.getWorkers();
-            ArrayList<AnalyzedWorker> spammers = new ArrayList();            
+            ArrayList<AnalyzedWorker> spammers = new ArrayList();
             for(int i = 0; i < workers.size(); i++){
                 AnalyzedWorker w = workers.get(i);
                 double[] workerCosts = graph.workerCost(w, null);
                 //System.out.println("" + i + ": " + workerCosts[0] + "," + workerCosts[1] + ". " + (workerCosts[0] >= .5 * workerCosts[1] ? "Yes" : "No"));
-                if(workerCosts[0] >= .5 * workerCosts[1]) 
+                if(workerCosts[0] >= .5 * workerCosts[1])
                     spammers.add(w);
             }
             return spammers;
         }
-                
+
         public static Dataset IPWFilter(Dataset dataset){
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             ArrayList<AnalyzedWorker> spammers = IPWSpammerPicker(dataset);
             return graph.removeSpammers(spammers);
         }
-        
 
-        
+
+
         public static ArrayList<AnalyzedWorker> CSNFSpammerPicker(Dataset dataset){
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             return graph.returnWorkersWithNoSimilarityPastNthQuartile(2);
         }
-        
+
         public static Dataset CSNFilter(Dataset dataset){
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             ArrayList<AnalyzedWorker> spammers = CSNFSpammerPicker(dataset);
             return graph.removeSpammers(spammers);
-        } 
-        
+        }
+
         public static Dataset ensembleFilter(Dataset dataset, ArrayList<ArrayList<AnalyzedWorker>> spammerSets, int min){
             ArrayList<AnalyzedWorker> spammers = new ArrayList();
             HashMap<String, Object[]> spammerCounts = new HashMap();
@@ -237,4 +247,3 @@ public class Filters
             return graph.removeSpammers(spammers);
         }
 }
-

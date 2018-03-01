@@ -34,16 +34,16 @@ public class MainExperiments {
     public static void main(String[] args) throws Exception{
         runExperiments();
     }
-    
+
     public static void runExperiments() throws Exception{
         ArrayList<Dataset> datasets = Datasets.getCrowdsourcingDatasets();
         //Set number of clustering algorithms that will be run
         int numClusterers = 10;
-        Clusterer[] clusterers = new Clusterer[10];
+        Clusterer[] clusterers = new Clusterer[numClusterers];
         Random rand = new Random(0);
         //Initialize all the clustering algorithms as K-means clusterers
         //with 2 centroids, which are randomly generated each time
-        for(int i = 0; i < 10; i++){
+        for(int i = 0; i < numClusterers; i++){
             SimpleKMeans kmeans = new SimpleKMeans();
             kmeans.setNumClusters(2);
             kmeans.setSeed(rand.nextInt());
@@ -79,7 +79,7 @@ public class MainExperiments {
             //System.exit(0);
             //Create dataset of workers where the (4) features are
             //from Dynamic Classification Filter, Cosine Similarity Neighborhood
-            //Filter, RY Filter, and IPW filter. 
+            //Filter, RY Filter, and IPW filter.
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             ArrayList<AnalyzedWorker> workers = graph.getWorkers();
             double[] dcfData = new double[workers.size()];
@@ -97,9 +97,15 @@ public class MainExperiments {
             attributeSet.add("proportion");
            // String evaluationAttribute = "EMAccuracy";
             new DawidSkene(30).doInference(dataset);
+<<<<<<< HEAD
             Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames, 
                     datasets, attributeSet, evaluationAttribute, .5, new IBk(1), confs);
             
+=======
+            Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames,
+                    datasets, attributeSet, evaluationAttribute, .5, new IBk(5), confs);
+
+>>>>>>> 01cf1787bf2ef9b9deb794b828cc22d4cc480b6d
             for(int i = 0; i < workers.size(); i++){
                 AnalyzedWorker worker = workers.get(i);
                 dcfData[i] = confs.get(worker.getId());
@@ -107,9 +113,10 @@ public class MainExperiments {
                 ryData[i] = graph.getCharacteristicValueForWorker("spammerScore", worker);
                 ipwData[i] = graph.getCharacteristicValueForWorker("workerCost", worker);
             }
-               
+
            String workerDatasetArffFilename = createWorkerDataset(dataset.relationName(), dcfData, csnfData, ryData, ipwData);
            Dataset workerDataset = FileLoader.loadFile(workerDatasetArffFilename);
+<<<<<<< HEAD
            workerDataset.setClassIndex(-1);
            DatasetMapper<AnalyzedWorker> datasetMapper = new DatasetMapper(workerDataset, workers);
            Map<AnalyzedWorker, List<Integer>> workerClusters = new HashMap<>();
@@ -198,6 +205,17 @@ public class MainExperiments {
                }
                if(total < 0){
                    spammers.add(w);
+=======
+           workerDataset.setClassIndex(-1)
+           for(Clusterer clusterer : clusterers){
+
+                Normalize normalize = new Normalize();
+                normalize.setInputFormat(workerDataset);
+                normalize.useFilter(workerDataset, normalize);
+               clusterer.buildClusterer(workerDataset);
+               for(int i = 0; i < workerDataset.getExampleSize(); i++){
+
+>>>>>>> 01cf1787bf2ef9b9deb794b828cc22d4cc480b6d
                }
            }
            Dataset filteredDataset = wtg.removeSpammers(spammers);
@@ -208,15 +226,15 @@ public class MainExperiments {
            System.out.println("Accuracy after filter: " + ResultMetrics.accuracy(filteredDataset));
            System.out.println("AUC after filter: " + ResultMetrics.auc(filteredDataset));
         }
-        
+
         //TODO: Run each clusterer on this data set and extract each pair of clusters.
-        
+
         //TODO: Use an ensemble technique to (1) determine which cluster is the
         //non-spammers and which cluster is the spammers, for each run of the clusterer,
         //and (2) integrate all the information together to reach a final conclusion
         //about each worker regarding whether he is a spammer.
     }
-    
+
     private static String createWorkerDataset(String datasetName, double[] dcfData, double[] csnfData,
             double[] ryData, double[] ipwData) throws Exception{
         String fn;
@@ -230,13 +248,13 @@ public class MainExperiments {
         bw.write("@attribute\tclass\t{0,1}\n");
 
         bw.write("@data\n");
-        
+
         for(int i = 0; i < dcfData.length; i++){
             bw.write("" + dcfData[i] + "," + csnfData[i] + "," + ryData[i] + "," + ipwData[i] + ",0\n");
         }
-        
+
         bw.close();
-        
+
         return fn;
     }
 }

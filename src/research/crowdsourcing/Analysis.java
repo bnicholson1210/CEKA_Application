@@ -608,6 +608,14 @@ public class Analysis
         public static String createWorkerAttributesArffWithSpammerIndicatorLabel(Dataset dataset, 
                 String name, ArrayList<String> attributeNames, String evalAttribute, double prop)
                 throws Exception {
+            File spammerArffsDirectory = new File("SpammerArffs");
+            if(!spammerArffsDirectory.exists()){
+                spammerArffsDirectory.mkdir();
+            }
+            File thisSpammerArffDirectory = new File("SpammerArffs\\" + name);
+            if(!thisSpammerArffDirectory.exists()){
+                thisSpammerArffDirectory.mkdir();
+            }
             String filename = "SpammerArffs\\" + name + "\\" + name + ".arff";
             File f = new File(filename);
             f.delete();
