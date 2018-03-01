@@ -102,10 +102,6 @@ public class Filters
                     Example e = workersCopy.getExampleByIndex(i);
                     int classification = (int)classifier.classifyInstance(e);
                     double[] distribution = classifier.distributionForInstance(e);
-<<<<<<< HEAD
-                    //System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
-                    confs.put(possibleSpammers.get(i).getId(), distribution[classification] * (classification == 0 ? 1 : -1));
-=======
                     System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
                     if(classification==0){
                         confs.put(possibleSpammers.get(i).getId(), distribution[classification]);
@@ -113,7 +109,6 @@ public class Filters
                     else{
                       confs.put(possibleSpammers.get(i).getId(), (-distribution[classification]));
                     }
->>>>>>> 01cf1787bf2ef9b9deb794b828cc22d4cc480b6d
                     classifications[i] = classification;
                     if(classifications[i] == 1) {
                         spamPropEst += (double)possibleSpammers.get(i).getMultipleNoisyLabelSet(0).getLabelSetSize() /
@@ -122,8 +117,8 @@ public class Filters
                     }
                 }
                 spamEst /= (double)workersCopy.getExampleSize();
-                System.out.println("Estimated proportion of spammers: " + spamEst);
-                System.out.println("Estimated proportion of labels: " + spamPropEst);
+                //System.out.println("Estimated proportion of spammers: " + spamEst);
+                //System.out.println("Estimated proportion of labels: " + spamPropEst);
                 iterationVals[iterations] = spamPropEst;
                 if(iterations == desiredIterations)
                 {

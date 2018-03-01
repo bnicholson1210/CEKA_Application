@@ -54,28 +54,7 @@ public class MainExperiments {
         for(Dataset dataset : datasets){
             datasetNames.add(dataset.relationName());
         }
-        ArrayList<String> attributeSet = new ArrayList();
-            attributeSet.add("distanceFromAverageEvenness");
-            attributeSet.add("logSimilarity");
-            attributeSet.add("spammerScore");
-            attributeSet.add("workerCost");
-            attributeSet.add("proportion");
-            String evaluationAttribute = "EMAccuracy";
-        //for(Dataset dataset : datasets){
-          for(int a = 0; a < datasets.size(); a++){
-              Dataset dataset = datasets.get(a);
-                String name = datasetNames.get(a);
-                System.out.println("---" + name + "---");
-                new DawidSkene(30).doInference(dataset);
-                System.out.println("Accuracy before filter: " + ResultMetrics.accuracy(dataset));
-                System.out.println("AUC before filter: " + ResultMetrics.auc(dataset));
-                Dataset filteredDataset1 = Filters.dynamicClassificationFiltering(dataset, name, datasetNames, datasets, attributeSet, evaluationAttribute, .5, new SMO());
-                new DawidSkene(30).doInference(filteredDataset1);
-                System.out.println("Accuracy after filter: " + ResultMetrics.accuracy(filteredDataset1));
-                System.out.println("AUC after filter: " + ResultMetrics.auc(filteredDataset1));
-            
-            if(1==1) continue;
-            //System.exit(0);
+        for(Dataset dataset : datasets){
             //Create dataset of workers where the (4) features are
             //from Dynamic Classification Filter, Cosine Similarity Neighborhood
             //Filter, RY Filter, and IPW filter.
@@ -87,24 +66,18 @@ public class MainExperiments {
             double[] ipwData = new double[workers.size()];
 
             Map<String, Double> confs = new HashMap<>();
-            //commented because testing something else
-            //ArrayList<String> attributeSet = new ArrayList();
+            ArrayList<String> attributeSet = new ArrayList();
             attributeSet.add("distanceFromAverageEvenness");
             attributeSet.add("logSimilarity");
             attributeSet.add("spammerScore");
             attributeSet.add("workerCost");
             attributeSet.add("proportion");
-           // String evaluationAttribute = "EMAccuracy";
+            String evaluationAttribute = "EMAccuracy";
             new DawidSkene(30).doInference(dataset);
-<<<<<<< HEAD
-            Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames, 
-                    datasets, attributeSet, evaluationAttribute, .5, new IBk(1), confs);
-            
-=======
+
             Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames,
                     datasets, attributeSet, evaluationAttribute, .5, new IBk(5), confs);
 
->>>>>>> 01cf1787bf2ef9b9deb794b828cc22d4cc480b6d
             for(int i = 0; i < workers.size(); i++){
                 AnalyzedWorker worker = workers.get(i);
                 dcfData[i] = confs.get(worker.getId());
@@ -115,7 +88,6 @@ public class MainExperiments {
 
            String workerDatasetArffFilename = createWorkerDataset(dataset.relationName(), dcfData, csnfData, ryData, ipwData);
            Dataset workerDataset = FileLoader.loadFile(workerDatasetArffFilename);
-<<<<<<< HEAD
            workerDataset.setClassIndex(-1);
            DatasetMapper<AnalyzedWorker> datasetMapper = new DatasetMapper(workerDataset, workers);
            Map<AnalyzedWorker, List<Integer>> workerClusters = new HashMap<>();
@@ -204,18 +176,8 @@ public class MainExperiments {
                }
                if(total < 0){
                    spammers.add(w);
-=======
-           workerDataset.setClassIndex(-1)
-           for(Clusterer clusterer : clusterers){
-
-                Normalize normalize = new Normalize();
-                normalize.setInputFormat(workerDataset);
-                normalize.useFilter(workerDataset, normalize);
-               clusterer.buildClusterer(workerDataset);
-               for(int i = 0; i < workerDataset.getExampleSize(); i++){
-
->>>>>>> 01cf1787bf2ef9b9deb794b828cc22d4cc480b6d
                }
+
            }
            Dataset filteredDataset = wtg.removeSpammers(spammers);
            new DawidSkene(30).doInference(dataset);
@@ -225,20 +187,13 @@ public class MainExperiments {
            System.out.println("Accuracy after filter: " + ResultMetrics.accuracy(filteredDataset));
            System.out.println("AUC after filter: " + ResultMetrics.auc(filteredDataset));
         }
-
-        //TODO: Run each clusterer on this data set and extract each pair of clusters.
-
-        //TODO: Use an ensemble technique to (1) determine which cluster is the
-        //non-spammers and which cluster is the spammers, for each run of the clusterer,
-        //and (2) integrate all the information together to reach a final conclusion
-        //about each worker regarding whether he is a spammer.
     }
 
     private static String createWorkerDataset(String datasetName, double[] dcfData, double[] csnfData,
             double[] ryData, double[] ipwData) throws Exception{
         String fn;
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File(
-                fn = "customDatasets/workerEnsembleClustering/" + datasetName + ".arff")));
+                fn = "/customDatasets/workerEnsembleClustering/" + datasetName + ".arff")));
         bw.write("@relation\t" + datasetName + "\n");
         bw.write("@attribute\tatt1\treal\n");
         bw.write("@attribute\tatt2\treal\n");
