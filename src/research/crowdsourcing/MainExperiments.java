@@ -89,13 +89,22 @@ public class MainExperiments {
            String workerDatasetArffFilename = createWorkerDataset(dataset.relationName(), dcfData, csnfData, ryData, ipwData);
            Dataset workerDataset = FileLoader.loadFile(workerDatasetArffFilename);
            workerDataset.setClassIndex(-1);
+           //Associate the list of workers and the data set of workers together to make lookup easier
            DatasetMapper<AnalyzedWorker> datasetMapper = new DatasetMapper(workerDataset, workers);
+           //A list of the clusters the worker is in (one for each clustering algorithm)
            Map<AnalyzedWorker, List<Integer>> workerClusters = new HashMap<>();
+           //A list of the QUALITY clusters the worker is in (0 if it is the good cluster,
+           //1 if it is the bad cluster)
            Map<AnalyzedWorker, List<Integer>> workerQualityClusters = new HashMap<>();
+           //A list of double values representing the average EM Accuracy (an estimation of the workers' accuracy
+           //since the true accuracy cannot be calculated because from an experimental standpoint the
+           //true labels are unknown) of each cluster the worker is in, mapped to each worker
            Map<AnalyzedWorker, List<Double>> workerQualityClusterValues = new HashMap<>();
            WorkerTaskGraph wtg = new WorkerTaskGraph(dataset);
            final Integer GOOD_CLUSTER_CODE = 0;
            final Integer BAD_CLUSTER_CODE = 1;
+           //Go through all the clusters from all the clustering algorithms and simply
+           //store the data of which clusters each worker belongs to
            for(Clusterer clusterer : clusterers){
                Normalize normalize = new Normalize();
                normalize.setInputFormat(workerDataset);
@@ -113,6 +122,10 @@ public class MainExperiments {
                    thisWorkerClusters.add(clusterNumber);
                }
            }
+           //Go through the data of all clusters that each worker belongs to,
+           //And calculate the average EM accuracy of the clusters to determine
+           //which is the good cluster and which is the bad cluster,
+           //and derive the worker quality values of each worker for each cluster.
            for(int i = 0; i < clusterers.length; i++){
                List<Double> cluster0accs = new ArrayList<>();
                List<Double> cluster1accs = new ArrayList<>();
@@ -169,6 +182,8 @@ public class MainExperiments {
                    spammers.add(w);
                }
            }*/
+           //Calculate the total quality values for each worker (based on the clusters
+           //they are in), and filter if below zero.
            for(int i = 0; i < workers.size(); i++){
                AnalyzedWorker w = workers.get(i);
                List<Double> thisWorkerQualityClusterValues = workerQualityClusterValues.get(w);
