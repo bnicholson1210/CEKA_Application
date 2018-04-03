@@ -64,8 +64,10 @@ public class MainExperiments {
             double[] csnfData = new double[workers.size()];
             double[] ryData = new double[workers.size()];
             double[] ipwData = new double[workers.size()];
+            double[] jiData = new double[workers.size()];
 
             Map<String, Double> confs = new HashMap<>();
+            Map<String, Double> JIndexes = new HashMap<>();
             ArrayList<String> attributeSet = new ArrayList();
             attributeSet.add("distanceFromAverageEvenness");
             attributeSet.add("logSimilarity");
@@ -77,6 +79,7 @@ public class MainExperiments {
 
             Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames,
                     datasets, attributeSet, evaluationAttribute, .5, new IBk(5), confs);
+            Filters.JIFilter(dataset, JIndexes);
 
             for(int i = 0; i < workers.size(); i++){
                 AnalyzedWorker worker = workers.get(i);
@@ -84,9 +87,10 @@ public class MainExperiments {
                 csnfData[i] = graph.getAverageSimilarityWithAllOtherWorkers(worker);
                 ryData[i] = graph.getCharacteristicValueForWorker("spammerScore", worker);
                 ipwData[i] = graph.getCharacteristicValueForWorker("workerCost", worker);
+                jiData[i] = JIndexes.get(worker.getId());
             }
 
-           String workerDatasetArffFilename = createWorkerDataset(dataset.relationName(), dcfData, csnfData, ryData, ipwData);
+           String workerDatasetArffFilename = createWorkerDataset(dataset.relationName(), dcfData, csnfData, ryData, ipwData, jiData);
            Dataset workerDataset = FileLoader.loadFile(workerDatasetArffFilename);
            workerDataset.setClassIndex(-1);
            //Associate the list of workers and the data set of workers together to make lookup easier
@@ -207,7 +211,7 @@ public class MainExperiments {
     }
 
     private static String createWorkerDataset(String datasetName, double[] dcfData, double[] csnfData,
-            double[] ryData, double[] ipwData) throws Exception{
+            double[] ryData, double[] ipwData, double[] jiData) throws Exception{
         String fn;
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File(
                 fn = "customDatasets/workerEnsembleClustering/" + datasetName + ".arff")));
@@ -216,12 +220,13 @@ public class MainExperiments {
         bw.write("@attribute\tatt2\treal\n");
         bw.write("@attribute\tatt3\treal\n");
         bw.write("@attribute\tatt4\treal\n");
+        bw.write("@attribute\tatt5\treal\n");
         bw.write("@attribute\tclass\t{0,1}\n");
 
         bw.write("@data\n");
 
         for(int i = 0; i < dcfData.length; i++){
-            bw.write("" + dcfData[i] + "," + csnfData[i] + "," + ryData[i] + "," + ipwData[i] + ",0\n");
+            bw.write("" + dcfData[i] + "," + csnfData[i] + "," + ryData[i] + "," + ipwData[i] + "," + jiData[i] + ",0\n");
         }
 
         bw.close();
