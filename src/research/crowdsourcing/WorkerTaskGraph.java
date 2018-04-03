@@ -14,6 +14,7 @@ import ceka.utils.PerformanceStatistic;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import research.DatasetUtils;
 
 public class WorkerTaskGraph 
@@ -1090,7 +1091,7 @@ public class WorkerTaskGraph
             return 1.0 - sim;
         }
         
-        public Dataset removeSpammers(ArrayList<AnalyzedWorker> spammers)
+        public Dataset removeSpammers(List<AnalyzedWorker> spammers)
         {
             Dataset result = dataset.generateEmpty();
             for(int i = 0; i < dataset.getCategorySize(); i++)
@@ -1640,6 +1641,34 @@ public class WorkerTaskGraph
             double[] result = new double[2];
             result[0] = score;
             result[1] = spamScore;
+            return result;
+        }
+        
+        //TODO: Adjust to identify the most common label values
+        public HashMap getMostCommonLabels(){
+            int numOfTasks = getTasks().size();
+            HashMap<String, Integer> result = new HashMap();
+//            int result[] = new int[numOfTasks];           
+            for(int n = 0; n < numOfTasks; n++){ 
+                AnalyzedTask task = getTasks().get(n);                
+                ArrayList<AnalyzedWorker> associatedWorkers = allWorkersForTask(task);
+                HashMap<String, Integer> labelCounts = new HashMap();
+                for(int k = 0; k < associatedWorkers.size(); k++){
+                    int label = labelFor(associatedWorkers.get(k), task);
+                    Integer count = labelCounts.get(""+label);
+                    if(count == null) labelCounts.put(""+label,new Integer(1));
+                    else labelCounts.put(""+label,new Integer(count+1));
+                }
+                int biggestVal = 0;
+                String mostCommon = "";
+                for(HashMap.Entry<String,Integer> entry : labelCounts.entrySet()){
+                    if(entry.getValue() > biggestVal){                        
+                        biggestVal = entry.getValue();
+                        mostCommon = entry.getKey();
+                    }
+                }
+                result.put(""+task.getId(),Integer.parseInt(mostCommon));
+            }
             return result;
         }
         

@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import stat.gaussian.GaussianModel;
@@ -14,6 +16,37 @@ import weka.core.matrix.Matrix;
 
 public class StatCalc 
 {
+    
+    public static double mode(double[] values){
+        Map<Double, Integer> valueCounts = new HashMap<>();
+        for(int i = 0; i < values.length; i++){
+            Integer prevCount = valueCounts.get(values[i]);
+            if(prevCount == null){
+                prevCount = 0;
+            }
+            valueCounts.put(values[i], prevCount + 1);
+        }
+        double maxValue = 0;
+        Integer maxCount = Integer.MIN_VALUE;
+        Iterator<Double> it = valueCounts.keySet().iterator();
+        while(it.hasNext()){
+            Double key = it.next();
+            if(valueCounts.get(key) > maxCount){
+                maxCount = valueCounts.get(key);
+                maxValue = key;
+            }
+        }
+        return maxValue;
+    }
+    
+    public static Double mode(List<Double> values){
+        double[] primitiveValues = new double[values.size()];
+        for(int i = 0; i < values.size(); i++){
+            primitiveValues[i] = values.get(i);
+        }
+        return mode(primitiveValues);
+    }
+    
 	public static double mean(double[] values)
     {
         double sum = 0;
@@ -44,9 +77,9 @@ public class StatCalc
 		return result;
 	}
         
-    public static double mean(ArrayList<Double> values)
+    public static double mean(List<Double> values)
     {
-                double[] vals = new double[values.size()];
+        double[] vals = new double[values.size()];
         for(int i = 0; i < values.size(); i++)
         {
             vals[i] = values.get(i).doubleValue();

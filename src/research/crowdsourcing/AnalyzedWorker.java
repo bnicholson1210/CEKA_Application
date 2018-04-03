@@ -76,9 +76,11 @@ public class AnalyzedWorker extends Worker
         
         public boolean equals(AnalyzedWorker other)
         {
-            if(other.getId().equals(this.getId()))
-                return true;
-            else
-                return false;
+            return other.getId().equals(this.getId());
+        }
+        
+        @Override
+        public int hashCode(){
+            return this.id.hashCode();
         }
 }
