@@ -103,11 +103,11 @@ public class Filters
                     int classification = (int)classifier.classifyInstance(e);
                     double[] distribution = classifier.distributionForInstance(e);
                     //System.out.println("Classification: " + classification + ", conf0: " + distribution[0] + ", conf1: " + distribution[1]);
-                    if(classification==0){
+                    if(classification == 0) {
                         confs.put(possibleSpammers.get(i).getId(), distribution[classification]);
                     }
-                    else{
-                      confs.put(possibleSpammers.get(i).getId(), (-distribution[classification]));
+                    else {
+                    	confs.put(possibleSpammers.get(i).getId(), (-distribution[classification]));
                     }
                     classifications[i] = classification;
                     if(classifications[i] == 1) {

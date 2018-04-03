@@ -74,6 +74,7 @@ public class MainExperiments {
             attributeSet.add("spammerScore");
             attributeSet.add("workerCost");
             attributeSet.add("proportion");
+
             String evaluationAttribute = "EMAccuracy";
             new DawidSkene(30).doInference(dataset);
 
