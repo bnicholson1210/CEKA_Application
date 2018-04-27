@@ -1644,6 +1644,34 @@ public class WorkerTaskGraph
             return result;
         }
         
+        //TODO: Adjust to identify the most common label values
+        public HashMap getMostCommonLabels(){
+            int numOfTasks = getTasks().size();
+            HashMap<String, Integer> result = new HashMap();
+//            int result[] = new int[numOfTasks];           
+            for(int n = 0; n < numOfTasks; n++){ 
+                AnalyzedTask task = getTasks().get(n);                
+                ArrayList<AnalyzedWorker> associatedWorkers = allWorkersForTask(task);
+                HashMap<String, Integer> labelCounts = new HashMap();
+                for(int k = 0; k < associatedWorkers.size(); k++){
+                    int label = labelFor(associatedWorkers.get(k), task);
+                    Integer count = labelCounts.get(""+label);
+                    if(count == null) labelCounts.put(""+label,new Integer(1));
+                    else labelCounts.put(""+label,new Integer(count+1));
+                }
+                int biggestVal = 0;
+                String mostCommon = "";
+                for(HashMap.Entry<String,Integer> entry : labelCounts.entrySet()){
+                    if(entry.getValue() > biggestVal){                        
+                        biggestVal = entry.getValue();
+                        mostCommon = entry.getKey();
+                    }
+                }
+                result.put(""+task.getId(),Integer.parseInt(mostCommon));
+            }
+            return result;
+        }
+        
         public int getWorkerIndex(AnalyzedWorker w)
         {
             for(int i = 0; i < workers.size(); i++)
