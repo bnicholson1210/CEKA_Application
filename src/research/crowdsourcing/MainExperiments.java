@@ -79,7 +79,7 @@ public class MainExperiments {
 
             Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames,
                     datasets, attributeSet, evaluationAttribute, .5, new IBk(5), confs);
-            Filters.JIFilter(dataset, JIndexes);
+            Filters.DJIFilter(dataset, JIndexes);
 
             for(int i = 0; i < workers.size(); i++){
                 AnalyzedWorker worker = workers.get(i);
