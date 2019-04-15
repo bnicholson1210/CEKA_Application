@@ -72,18 +72,38 @@ public class Datasets {
         fejDataset.setRelationName("FEJ2013");
         datasets.add(fejDataset);
 
-
+        Dataset angerDataset = FileLoader.loadFile(BinaryBiasedPath + "anger.response.txt", BinaryBiasedPath + "anger.gold.txt");
+        angerDataset.setRelationName("Anger");
+        datasets.add(angerDataset);
+        
         Dataset duckDataset = FileLoader.loadFile(BinaryBiasedPath + "duck.response.txt", BinaryBiasedPath + "duck.gold.txt");
         duckDataset.setRelationName("Duck");
         datasets.add(duckDataset);
+        
+        Dataset disgustDataset = FileLoader.loadFile(BinaryBiasedPath + "disgust.response.txt", BinaryBiasedPath + "disgust.gold.txt");
+        disgustDataset.setRelationName("Disgust");
+        datasets.add(disgustDataset);
+        
+        Dataset fearDataset = FileLoader.loadFile(BinaryBiasedPath + "fear.response.txt", BinaryBiasedPath + "fear.gold.txt");
+        fearDataset.setRelationName("Fear");
+        datasets.add(fearDataset);
+        Dataset joyDataset = FileLoader.loadFile(BinaryBiasedPath + "joy.response.txt", BinaryBiasedPath + "joy.gold.txt");
+        joyDataset.setRelationName("Joy");
+        datasets.add(joyDataset);
+        Dataset sadnessDataset = FileLoader.loadFile(BinaryBiasedPath + "sadness.response.txt", BinaryBiasedPath + "sadness.gold.txt");
+        sadnessDataset.setRelationName("Sadness");
+        datasets.add(sadnessDataset);
+        Dataset surpriseDataset = FileLoader.loadFile(BinaryBiasedPath + "surprise.response.txt", BinaryBiasedPath + "surprise.gold.txt");
+        surpriseDataset.setRelationName("Surprise");
+        datasets.add(surpriseDataset);
 
-        Dataset incomeDataset = FileLoader.loadFile(income94Path + "income94.response.txt", income94Path + "income94.gold.txt");
-        incomeDataset.setRelationName("Income94");
-        datasets.add(incomeDataset);
-
-        Dataset leavesDataset = FileLoader.loadFile(leavesPath + "leaves6.response.txt", leavesPath + "leaves6.gold.txt");
-        leavesDataset.setRelationName("Leaves6");
-        datasets.add(leavesDataset);
+//        Dataset incomeDataset = FileLoader.loadFile(income94Path + "income94.response.txt", income94Path + "income94.gold.txt");
+//        incomeDataset.setRelationName("Income94");
+//        datasets.add(incomeDataset);
+//
+//        Dataset leavesDataset = FileLoader.loadFile(leavesPath + "leaves6.response.txt", leavesPath + "leaves6.gold.txt");
+//        leavesDataset.setRelationName("Leaves6");
+//        datasets.add(leavesDataset);
 
         return datasets;
     }
