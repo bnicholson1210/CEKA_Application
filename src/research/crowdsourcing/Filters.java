@@ -210,86 +210,9 @@ public class Filters
             return graph.removeSpammers(spammers);
         }
 
-        public static ArrayList<AnalyzedWorker> JISpammerPicker(Dataset dataset, Map<String, Double> JIndexes){
-            if(JIndexes == null) JIndexes = new HashMap<>();
-            //After running this for a range of cuttoff values, the best seems to be 0.23
-            double cuttoff = 0.23; 
-            WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
-            HashMap <String,Integer> commonLabels = graph.getMostCommonLabels();
-//            HashMap <String, Integer> commonLabels = graph.getKeyMap(); //use cuttoff 0.26
-            int numOfTasks = graph.getTasks().size();
-            ArrayList<AnalyzedWorker> workers = graph.getWorkers();
-            ArrayList<AnalyzedWorker> spammers = new ArrayList();
+        public static ArrayList<AnalyzedWorker> DynamicJISpammerPicker(Dataset dataset, Map<String, Double> IndexMap){
+            if (IndexMap == null) IndexMap = new HashMap();
             
-            //Keeps up with how many times a workers response matchs the most common response
-            HashMap<String, Double> interCounts = new HashMap();
-            //Keeps up with how many unique responses their are between the worker and common response list
-            HashMap<String, Double> unionCounts = new HashMap();
-
-            for(int n = 0; n<numOfTasks; n++){
-                AnalyzedTask task = graph.getTasks().get(n);
-                ArrayList<AnalyzedWorker> associatedWorkers = graph.allWorkersForTask(task);
-                for(int k=0; k < associatedWorkers.size(); k++){
-                    AnalyzedWorker w = associatedWorkers.get(k);
-                    int response = graph.labelFor(w, task);
-
-                    Double icount = interCounts.get(""+w.getId());
-                    if(icount == null) interCounts.put(""+w.getId(), new Double(0));
-                    if(response == commonLabels.get(task.getId())){
-                        if(icount == null) interCounts.put(""+w.getId(), new Double(1));
-                        else interCounts.put(""+w.getId(), new Double(icount + 1));
-                        
-                        Double ucount = unionCounts.get(""+w.getId());
-                        if(ucount == null) unionCounts.put(""+w.getId(), new Double(1));                
-                        else unionCounts.put(""+w.getId(), new Double(ucount + 1));
-                    }
-                    else{
-                        Double ucount = unionCounts.get(""+w.getId());
-                        if(ucount == null) unionCounts.put(""+w.getId(), new Double(2));                
-                        else unionCounts.put(""+w.getId(), new Double(ucount + 2));
-                    }
-
-                    
-
-                }
-            }
-
-            for(int n = 0; n < workers.size(); n++){
-                AnalyzedWorker w = workers.get(n);
-                try{
-                    //Calculate the Jaccard Index for a given worker
-                    double JIndex = interCounts.get(w.getId()) / unionCounts.get(w.getId());
-                    //System.out.println("Jaccard Index for worker "+w.getId()+" is: "+JIndex);
-                    //If the JIndex is less than the stated cuttoff point, mark as spammer                    
-                    if(JIndex <= cuttoff)spammers.add(w);
-                    JIndexes.put(w.getId(), JIndex);
-                }
-                catch(Exception e){
-                    System.out.println("no index found for this guy "+w.getId());
-                }
-            }
-            return spammers;
-        }
-        
-        public static Dataset JIFilter(Dataset dataset, Map<String, Double> JIndexes){
-            WorkerTaskGraph graph = new WorkerTaskGraph(dataset);           
-            ArrayList<AnalyzedWorker> spammers = JISpammerPicker(dataset, JIndexes);
-            return graph.removeSpammers(spammers);
-        }
-        public static Dataset JIFilter(Dataset dataset){
-            //Jaccard Index = (intersection count of sets) / (union count of sets)
-    
-            /*
-            Take all of a workers answers and compare to a standard answer set.
-            In this case, the standard will be the most common answer set.
-            */
-            WorkerTaskGraph graph = new WorkerTaskGraph(dataset);           
-            ArrayList<AnalyzedWorker> spammers = JISpammerPicker(dataset, null);
-            return graph.removeSpammers(spammers);
-        }
-        public static ArrayList<AnalyzedWorker> DynamicJISpammerPicker(Dataset dataset){
-            //After running this for a range of cuttoff values, the best seems to be 0.23
-            //double cuttoff = 0.23; 
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
             HashMap <String,Integer> commonLabels = graph.getMostCommonLabels();
 //            HashMap <String, Integer> commonLabels = graph.getKeyMap(); //use cuttoff 0.26
@@ -327,18 +250,12 @@ public class Filters
                 }
             }
             
-//            ArrayList<Double> Indexes = new ArrayList();
-            HashMap<String,Double> IndexMap = new HashMap();
             for(int n = 0; n < workers.size(); n++){
                 AnalyzedWorker w = workers.get(n);
                 try{
                     //Calculate the Jaccard Index for a given worker
                     double JIndex = interCounts.get(w.getId()) / unionCounts.get(w.getId());
                     IndexMap.put(""+w.getId(), JIndex);
-                    //System.out.println("Jaccard Index for worker "+w.getId()+" is: "+JIndex);
-                    //If the JIndex is less than the stated cuttoff point, mark as spammer                    
-//                    if(JIndex <= cuttoff)spammers.add(w);
-//                    JIndexes.put(w.getId(), JIndex);
                 }
                 catch(Exception e){
                     System.out.println("no index found for this guy "+w.getId());
@@ -381,9 +298,14 @@ public class Filters
             return spammers;
         }
         
+        public static Dataset DJIFilter(Dataset dataset, Map<String, Double> JIndexes){
+            WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
+            ArrayList<AnalyzedWorker> spammers = DynamicJISpammerPicker(dataset, JIndexes);
+            return graph.removeSpammers(spammers);
+        }
         public static Dataset DJIFilter(Dataset dataset){
             WorkerTaskGraph graph = new WorkerTaskGraph(dataset);
-            ArrayList<AnalyzedWorker> spammers = DynamicJISpammerPicker(dataset);
+            ArrayList<AnalyzedWorker> spammers = DynamicJISpammerPicker(dataset, null);
             return graph.removeSpammers(spammers);
         }
         public static void avgNumberOfAnswers(Dataset dataset, ArrayList<AnalyzedWorker> workers){
