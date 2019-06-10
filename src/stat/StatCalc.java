@@ -55,7 +55,7 @@ public class StatCalc
         {
         	if(values[i] > Double.NEGATIVE_INFINITY && values[i] < Double.POSITIVE_INFINITY)
         		sum += values[i];
-        	else
+                else
         		numUndefined++;
         }
         sum /= (double)(values.length - numUndefined);
@@ -184,7 +184,7 @@ public class StatCalc
     //Plots the density of the data points given
     public static String generateRCode(double[] data, String title)
     {
-    	String result = "png('C:\\\\Users\\\\Bryce\\\\Desktop\\\\GMMPlots\\\\" +
+    	String result = "png('C:\\\\Users\\\\Nick\\\\Desktop\\\\GMMPlots\\\\" +
     			title + ".png')\n";
     	result += "z <- c(";
     	for(int i = 0; i < data.length; i++)

@@ -1644,7 +1644,6 @@ public class WorkerTaskGraph
             return result;
         }
         
-        //TODO: Adjust to identify the most common label values
         public HashMap getMostCommonLabels(){
             int numOfTasks = getTasks().size();
             HashMap<String, Integer> result = new HashMap();
@@ -1671,7 +1670,42 @@ public class WorkerTaskGraph
             }
             return result;
         }
-        
+	public HashMap getLeastCommonLabels(){
+            int numOfTasks = getTasks().size();
+            HashMap<String, Integer> result = new HashMap();
+//            int result[] = new int[numOfTasks];           
+            for(int n = 0; n < numOfTasks; n++){ 
+                AnalyzedTask task = getTasks().get(n);                
+                ArrayList<AnalyzedWorker> associatedWorkers = allWorkersForTask(task);
+                HashMap<String, Integer> labelCounts = new HashMap();
+                for(int k = 0; k < associatedWorkers.size(); k++){
+                    int label = labelFor(associatedWorkers.get(k), task);
+                    Integer count = labelCounts.get(""+label);
+                    if(count == null) labelCounts.put(""+label,new Integer(1));
+                    else labelCounts.put(""+label,new Integer(count+1));
+                }
+                int lowestVal = 1000000;
+                String leastCommon = "";
+                for(HashMap.Entry<String,Integer> entry : labelCounts.entrySet()){
+                    if(entry.getValue() < lowestVal){                        
+                        lowestVal = entry.getValue();
+                        leastCommon = entry.getKey();
+                    }
+                }
+                result.put(""+task.getId(),Integer.parseInt(leastCommon));
+            }
+            return result;
+        }
+	
+        public HashMap getKeyMap(){
+            int numOfTasks = getTasks().size();
+            HashMap<String, Integer> result = new HashMap();
+            for (int n = 0; n < numOfTasks; n++){
+                AnalyzedTask task = getTasks().get(n);
+                result.put(""+task.getId(), task.getTrueLabel().getValue());
+            }
+            return result;
+        }
         public int getWorkerIndex(AnalyzedWorker w)
         {
             for(int i = 0; i < workers.size(); i++)

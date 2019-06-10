@@ -74,13 +74,12 @@ public class MainExperiments {
             attributeSet.add("spammerScore");
             attributeSet.add("workerCost");
             attributeSet.add("proportion");
-
             String evaluationAttribute = "EMAccuracy";
             new DawidSkene(30).doInference(dataset);
 
             Filters.dynamicClassificationFiltering(dataset, dataset.relationName(), datasetNames,
                     datasets, attributeSet, evaluationAttribute, .5, new IBk(5), confs);
-            Filters.JIFilter(dataset, JIndexes);
+            Filters.DJIFilter(dataset, JIndexes);
 
             for(int i = 0; i < workers.size(); i++){
                 AnalyzedWorker worker = workers.get(i);
